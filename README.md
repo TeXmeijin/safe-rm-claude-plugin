@@ -75,6 +75,7 @@ User Request → Claude (LLM) → Shell Command → [🛡️ THIS PLUGIN] → Sy
 2. **Cannot be bypassed** — all `rm` commands go through it
 3. **LLM-agnostic** — works regardless of what Claude decides
 4. **Zero regex patterns** — direct command interception
+5. **AI-friendly feedback** — clear error messages guide the agent to correct actions
 
 ## Quick Start
 
@@ -100,9 +101,29 @@ rm .env
 
 # But the plugin automatically blocks dangerous operations
 # ❌ FORBIDDEN: You are trying to remove dotfile: .env
+# You must ask your leader to run manually: rm /path/to/.env
 ```
 
 **You don't need to learn new commands or change your workflow.** The protection works invisibly in the background.
+
+### Smart AI Guidance
+
+Unlike silent blocking, this plugin provides **actionable feedback** that helps Claude understand what went wrong and what to do next:
+
+```bash
+rm -r large-directory/  # contains 50+ files
+
+# ❌ Error output:
+# FORBIDDEN: Directory contains 50 files (limit: 10)
+# Directory: /Users/you/project/large-directory
+# NEXT ACTION👉: You MUST ask your manager to run manually: rm -rf /path/to/directory
+```
+
+**This prevents AI runaway behavior:**
+- ✅ Claude sees exactly why the operation was blocked
+- ✅ Claude learns what alternative actions to suggest
+- ✅ Claude stops trying dangerous variations
+- ✅ Claude can ask the user for confirmation instead
 
 ## What's Protected
 
@@ -124,19 +145,29 @@ The plugin enforces 6 critical safety checks:
 ```bash
 # ❌ Blocked: Dotfile
 rm .env
-# Error: FORBIDDEN: You are trying to remove dotfile: .env
+# FORBIDDEN: You are trying to remove dotfile: .env
+# You must ask your leader to run manually: rm /path/to/.env
+# → Claude learns: "I should ask the user for permission"
 
 # ❌ Blocked: Outside current directory
 rm ../important-file
-# Error: Cannot remove files outside current directory
+# FORBIDDEN: Cannot remove files outside current directory
+# Current directory: /Users/you/project
+# Target file: /Users/you/important-file
+# You can override with --forbidden-outside-cwd false option
+# → Claude learns: "This file is outside the project scope"
 
 # ❌ Blocked: System directory
 rm -rf /
-# Error: Cannot remove special directory: /
+# FORBIDDEN: Cannot remove special directory: /
+# You must manually run: rm /
+# → Claude learns: "This is a critical system path"
 
 # ❌ Blocked: Too many files
 rm -r large-directory/  # contains 50+ files
-# Error: Directory contains 50 files (limit: 10)
+# FORBIDDEN: Directory contains 50 files (limit: 10)
+# NEXT ACTION👉: You MUST ask your manager to run manually
+# → Claude learns: "I should suggest alternative approaches"
 ```
 
 ### Safe Operations
