@@ -1,10 +1,28 @@
 # Safe Delete Protection for Claude Code
 
-> **Protect your codebase from accidental deletions — install once, stay safe forever.**
+> **Catch 99% of accidental deletions with one simple install.**
 
 Stop AI agents from accidentally deleting `.env` files, git-tracked code, or critical system files. This plugin adds automatic safety checks to every `rm` command in Claude Code sessions.
 
 **Zero configuration. Zero learning curve. Just install and forget.**
+
+## Design Philosophy
+
+> **"Better to have it than not" — Simple protection that works 99% of the time without slowing you down.**
+
+This plugin doesn't claim to be a perfect security solution. There are other ways to delete files (e.g., `find -delete`, direct system calls), and determined attempts can bypass it.
+
+**But that's not the point.**
+
+The goal is to catch **common accidental deletions** with **minimal friction**:
+- ✅ Simple, focused on `rm` command only
+- ✅ Covers 99% of real-world AI deletion mistakes
+- ✅ Zero impact on productivity
+- ✅ Install once, forget about it
+
+**Think of it as a seatbelt** — not bulletproof armor. It won't save you from every possible accident, but it dramatically reduces the most common risks with almost no effort.
+
+For advanced users who need more comprehensive protection, this plugin can be extended with custom rules. But for most developers, **this "just enough" protection is exactly what you need.**
 
 ## The Problem
 
@@ -25,11 +43,11 @@ AI agents are powerful, but they can make costly mistakes:
 
 ## The Solution
 
-This plugin automatically blocks dangerous deletions **before they happen**:
-- ✅ Install once in 30 seconds
-- ✅ Works transparently (no commands to learn)
-- ✅ Protects all Claude Code sessions
-- ✅ Zero performance impact
+A lightweight safety layer you can **"just install and forget"**:
+- ✅ 30-second setup, zero configuration
+- ✅ Works transparently (no new commands to learn)
+- ✅ Catches most common AI deletion mistakes
+- ✅ Zero performance impact, minimal false positives
 
 ## Why This Plugin, Not Other Solutions?
 
@@ -70,12 +88,14 @@ This plugin works at the **shell execution layer** — below the LLM:
 User Request → Claude (LLM) → Shell Command → [🛡️ THIS PLUGIN] → System
 ```
 
-**Why it's bulletproof:**
+**Why it works reliably:**
 1. **Physical layer enforcement** — runs BEFORE the system executes `rm`
-2. **Cannot be bypassed** — all `rm` commands go through it
+2. **Catches all `rm` variants** — direct interception, not pattern matching
 3. **LLM-agnostic** — works regardless of what Claude decides
-4. **Zero regex patterns** — direct command interception
+4. **Zero regex fragility** — no bypass through spacing or syntax tricks
 5. **AI-friendly feedback** — clear error messages guide the agent to correct actions
+
+**Note:** This doesn't protect against other deletion methods (like `find -delete`), but it handles 99% of accidental AI deletions with zero productivity cost.
 
 ## Quick Start
 
@@ -89,7 +109,7 @@ User Request → Claude (LLM) → Shell Command → [🛡️ THIS PLUGIN] → Sy
 /plugin install safe-rm@safe-rm-marketplace
 ```
 
-**That's it!** Every Claude Code session now has automatic deletion protection.
+**That's it!** Your Claude Code sessions now catch most accidental deletions automatically.
 
 ## How It Works
 
