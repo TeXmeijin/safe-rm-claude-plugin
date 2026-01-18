@@ -6,24 +6,6 @@ Stop AI agents from accidentally deleting `.env` files, git-tracked code, or cri
 
 **Zero configuration. Zero learning curve. Just install and forget.**
 
-## Design Philosophy
-
-> **"Better to have it than not" — Simple protection that works 99% of the time without slowing you down.**
-
-This plugin doesn't claim to be a perfect security solution. There are other ways to delete files (e.g., `find -delete`, direct system calls), and determined attempts can bypass it.
-
-**But that's not the point.**
-
-The goal is to catch **common accidental deletions** with **minimal friction**:
-- ✅ Simple, focused on `rm` command only
-- ✅ Covers 99% of real-world AI deletion mistakes
-- ✅ Zero impact on productivity
-- ✅ Install once, forget about it
-
-**Think of it as a seatbelt** — not bulletproof armor. It won't save you from every possible accident, but it dramatically reduces the most common risks with almost no effort.
-
-For advanced users who need more comprehensive protection, this plugin can be extended with custom rules. But for most developers, **this "just enough" protection is exactly what you need.**
-
 ## The Problem
 
 AI agents are powerful, but they can make costly mistakes:
@@ -239,6 +221,24 @@ When Claude runs `rm`, it actually executes the protection script which:
 3. If unsafe, blocks the operation with a clear error message
 
 **This happens automatically — no manual configuration required.**
+
+## Design Philosophy
+
+> **"Better to have it than not" — Simple protection that works 99% of the time without slowing you down.**
+
+This plugin doesn't claim to be a perfect security solution. There are other ways to delete files (e.g., `find -delete`, direct system calls), and determined attempts can bypass it.
+
+**But that's not the point.**
+
+The goal is to catch **common accidental deletions** with **minimal friction**:
+- ✅ Simple, focused on `rm` command only
+- ✅ Covers 99% of real-world AI deletion mistakes
+- ✅ Zero impact on productivity
+- ✅ Install once, forget about it
+
+**Think of it as a seatbelt** — not bulletproof armor. It won't save you from every possible accident, but it dramatically reduces the most common risks with almost no effort.
+
+For advanced users who need more comprehensive protection, this plugin can be extended with custom rules. But for most developers, **this "just enough" protection is exactly what you need.**
 
 ## For Developers
 
