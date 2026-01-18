@@ -1,0 +1,15 @@
+{
+  "description": "safe-rm - Safe remove command for AI coding agents",
+  "hooks": {
+    "SessionStart": [
+      {
+        "hooks": [
+          {
+            "type": "command",
+            "command": "echo \"alias rm='${CLAUDE_PLUGIN_ROOT}/bin/safe-rm'\" >> \"$CLAUDE_ENV_FILE\""
+          }
+        ]
+      }
+    ]
+  }
+}
