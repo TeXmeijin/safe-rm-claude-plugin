@@ -76,8 +76,6 @@ User Request → Claude (LLM) → Shell Command → [🛡️ THIS PLUGIN] → Sy
 3. **LLM-agnostic** — works regardless of what Claude decides
 4. **Zero regex patterns** — direct command interception
 
-**Inspired by:** [claude-code-safety-net](https://github.com/kenryu42/claude-code-safety-net) PreToolUse hooks, but simplified for deletion protection only.
-
 ## Quick Start
 
 ### Installation
