@@ -83,7 +83,7 @@ User Request → Claude (LLM) → Shell Command → [🛡️ THIS PLUGIN] → Sy
 
 ```bash
 # Add the marketplace
-/plugin marketplace add github:TeXmeijin/safe-rm-claude-plugin
+/plugin marketplace add TeXmeijin/safe-rm-claude-plugin
 
 # Install the plugin
 /plugin install safe-rm@safe-rm-marketplace
