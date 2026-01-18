@@ -12,7 +12,7 @@
       "description": "Prevents accidental deletion of important files by enforcing safety checks on dotfiles, git-managed files, directories outside cwd, and special directories.",
       "source": "./",
       "category": "security",
-      "homepage": "https://github.com/yourusername/safe-rm-claude-plugin"
+      "homepage": "https://github.com/TeXmeijin/safe-rm-claude-plugin"
     }
   ]
 }

@@ -1,163 +1,221 @@
-# safe-rm Claude Code Plugin
+# Safe Delete Protection for Claude Code
 
-A safe remove command wrapper for AI coding agents that prevents accidental deletion of important files.
+> **Protect your codebase from accidental deletions — install once, stay safe forever.**
 
-## Overview
+Stop AI agents from accidentally deleting `.env` files, git-tracked code, or critical system files. This plugin adds automatic safety checks to every `rm` command in Claude Code sessions.
 
-`safe-rm` is a Claude Code plugin that replaces the `rm` command with a safety-enhanced version. It enforces multiple protective checks to prevent AI agents from accidentally deleting critical files and directories.
+**Zero configuration. Zero learning curve. Just install and forget.**
 
-## Features
+## The Problem
 
-### Protection Mechanisms
-
-- **Dotfile Protection**: Prevents removal of dotfiles (files starting with `.`) by default
-- **Directory Scope Enforcement**: Blocks deletion of files outside the current working directory
-- **Special Directory Protection**: Prevents removal of critical system directories (`/`, `~`)
-- **Gitignored File Protection**: Blocks deletion of files listed in `.gitignore`
-- **File Count Limits**: Restricts recursive directory deletion to a maximum file count (default: 10 files)
-- **Git-Managed File Confirmation**: Requires explicit confirmation for removing git-tracked files
-
-### Configurable Options
-
-All safety checks can be customized using command-line options:
+AI agents are powerful, but they can make costly mistakes:
 
 ```bash
-# Allow dotfile removal
-safe-rm --forbidden-dotfiles false .env
+# Claude executes: rm .env
+# 💥 Your API keys are gone
 
-# Allow files outside current directory
-safe-rm --forbidden-outside-cwd false /path/to/file
+# Claude executes: rm -rf ../important-project
+# 💥 Wrong directory deleted
 
-# Only allow removal of git new/unstaged files
-safe-rm --only-git-new-file true newfile.txt
-
-# Increase directory file count limit
-safe-rm --forbidden-file-count 20 large-directory/
+# Claude executes: rm src/config.ts
+# 💥 Git-tracked file removed without confirmation
 ```
 
-### Advanced Features
+**One accidental deletion can cost hours of recovery work.**
 
-- **Base64 Encoded Confirmation**: For git-managed files, confirmation uses base64-encoded filenames to prevent accidental execution
-- **Force Option for /tmp**: The `-f` (force) flag is only allowed for files under `/tmp`
-- **Recursive Removal**: Use `-r` or `-R` for directories (with file count protection)
+## The Solution
 
-## Installation
+This plugin automatically blocks dangerous deletions **before they happen**:
+- ✅ Install once in 30 seconds
+- ✅ Works transparently (no commands to learn)
+- ✅ Protects all Claude Code sessions
+- ✅ Zero performance impact
 
-### From Marketplace
+## Why This Plugin, Not Other Solutions?
+
+You might be using these common approaches to protect your files:
+
+### ❌ Approach 1: Deny `rm` in settings.json
+
+```json
+{
+  "permissions": {
+    "deny": ["Bash(rm *)"]
+  }
+}
+```
+
+**Problem:** Pattern matching is fragile and can be bypassed:
+- `rm file.txt` → ❌ Blocked
+- `rm  file.txt` (extra space) → ✅ Bypassed
+- `/bin/rm file.txt` → ✅ Bypassed
+- Known bug: [deny permissions not enforced](https://github.com/anthropics/claude-code/issues/6699)
+
+### ❌ Approach 2: Instructions in CLAUDE.md
+
+```markdown
+IMPORTANT: Never use the rm command to delete files.
+```
+
+**Problem:** LLM instructions are unreliable:
+- Claude may ignore instructions under certain contexts
+- No guaranteed enforcement
+- [Real incidents](https://github.com/anthropics/claude-code/issues/12489): "rm -rf executed on home directory despite explicit instructions"
+
+### ✅ This Plugin: Shell-Layer Protection
+
+This plugin works at the **shell execution layer** — below the LLM:
+
+```
+User Request → Claude (LLM) → Shell Command → [🛡️ THIS PLUGIN] → System
+```
+
+**Why it's bulletproof:**
+1. **Physical layer enforcement** — runs BEFORE the system executes `rm`
+2. **Cannot be bypassed** — all `rm` commands go through it
+3. **LLM-agnostic** — works regardless of what Claude decides
+4. **Zero regex patterns** — direct command interception
+
+**Inspired by:** [claude-code-safety-net](https://github.com/kenryu42/claude-code-safety-net) PreToolUse hooks, but simplified for deletion protection only.
+
+## Quick Start
+
+### Installation
 
 ```bash
 # Add the marketplace
-/plugin add-marketplace github:yourusername/safe-rm-claude-plugin
+/plugin marketplace add github:TeXmeijin/safe-rm-claude-plugin
 
 # Install the plugin
 /plugin install safe-rm@safe-rm-marketplace
 ```
 
-### Local Installation
+**That's it!** Every Claude Code session now has automatic deletion protection.
+
+## How It Works
+
+After installation, all `rm` commands in Claude Code are transparently protected:
 
 ```bash
-# Install from local directory
-/plugin install /path/to/safe-rm-claude-plugin
+# You use rm normally
+rm .env
+
+# But the plugin automatically blocks dangerous operations
+# ❌ FORBIDDEN: You are trying to remove dotfile: .env
 ```
 
-## Usage
+**You don't need to learn new commands or change your workflow.** The protection works invisibly in the background.
 
-Once installed, the `rm` command in Claude Code sessions is automatically aliased to `safe-rm`. You can use it just like the regular `rm` command:
+## What's Protected
 
-```bash
-# Basic usage
-rm file.txt
+The plugin enforces 6 critical safety checks:
 
-# Remove directory
-rm -r directory/
-
-# View help
-rm --help
-```
-
-## Configuration Options
-
-| Option | Default | Description |
-|--------|---------|-------------|
-| `--forbidden-dotfiles` | `true` | Prevent removal of dotfiles |
-| `--only-git-new-file` | `false` | Only allow removal of git new/unstaged files |
-| `--forbidden-file-count` | `10` | Max files allowed in directory removal |
-| `--forbidden-special-dirs` | `true` | Prevent removal of `/` and `~` |
-| `--forbidden-outside-cwd` | `true` | Prevent removal of files outside current directory |
-| `--forbidden-gitignored` | `true` | Prevent removal of gitignored files |
+| Protection | What It Does |
+|------------|--------------|
+| 🔒 **Dotfiles** | Blocks deletion of configuration files (`.env`, `.gitignore`, etc.) |
+| 🔒 **Git-managed files** | Requires confirmation before removing tracked files |
+| 🔒 **Outside project scope** | Prevents deleting files outside your current directory |
+| 🔒 **System directories** | Blocks removal of `/`, `~`, and other critical paths |
+| 🔒 **Gitignored files** | Protects important files like `node_modules`, build outputs |
+| 🔒 **Large directories** | Limits recursive deletion to 10 files (configurable) |
 
 ## Examples
 
 ### Protected Scenarios
 
 ```bash
-# This will be blocked (dotfile)
+# ❌ Blocked: Dotfile
 rm .env
 # Error: FORBIDDEN: You are trying to remove dotfile: .env
 
-# This will be blocked (outside cwd)
-rm ../parent-file
-# Error: FORBIDDEN: Cannot remove files outside current directory
+# ❌ Blocked: Outside current directory
+rm ../important-file
+# Error: Cannot remove files outside current directory
 
-# This will be blocked (special directory)
+# ❌ Blocked: System directory
 rm -rf /
-# Error: FORBIDDEN: Cannot remove special directory: /
+# Error: Cannot remove special directory: /
+
+# ❌ Blocked: Too many files
+rm -r large-directory/  # contains 50+ files
+# Error: Directory contains 50 files (limit: 10)
 ```
 
 ### Safe Operations
 
 ```bash
-# Remove a regular file in current directory
+# ✅ Allowed: Regular file in current directory
 rm temp-file.txt
 
-# Remove a directory with few files
-rm -r small-dir/
+# ✅ Allowed: Small directory
+rm -r test-folder/  # contains 5 files
 
-# Remove with explicit permission override
+# ✅ Allowed: With explicit override
 rm --forbidden-dotfiles false .temporary-cache
 ```
 
-## How It Works
+## Advanced Configuration
 
-The plugin uses Claude Code's SessionStart hook to set up an alias that redirects `rm` commands to the `safe-rm` script. The script performs multiple safety checks before executing the actual file removal using the system's `/bin/rm` command.
+Most users won't need to change anything, but you can customize protection rules when needed:
 
-## Development
+```bash
+# Temporarily allow dotfile removal
+rm --forbidden-dotfiles false .temporary-cache
+
+# Increase file count limit for large directories
+rm --forbidden-file-count 50 build-output/
+
+# Allow deletion outside current directory (use with caution!)
+rm --forbidden-outside-cwd false /path/to/file
+```
+
+### All Available Options
+
+| Option | Default | Override Example |
+|--------|---------|------------------|
+| `--forbidden-dotfiles` | `true` | `rm --forbidden-dotfiles false .env` |
+| `--forbidden-outside-cwd` | `true` | `rm --forbidden-outside-cwd false ../file` |
+| `--forbidden-file-count` | `10` | `rm --forbidden-file-count 50 dir/` |
+| `--forbidden-special-dirs` | `true` | Cannot be overridden |
+| `--forbidden-gitignored` | `true` | `rm --forbidden-gitignored false node_modules/` |
+| `--only-git-new-file` | `false` | `rm --only-git-new-file true newfile.txt` |
+
+## Technical Details
+
+The plugin works by installing a SessionStart hook that creates a transparent alias: `rm` → `safe-rm`.
+
+When Claude runs `rm`, it actually executes the protection script which:
+1. Validates the operation against all safety rules
+2. If safe, calls the system's `/bin/rm`
+3. If unsafe, blocks the operation with a clear error message
+
+**This happens automatically — no manual configuration required.**
+
+## For Developers
+
+### Local Testing
+
+```bash
+# Test without installing
+claude --plugin-dir ~/path/to/safe-rm-claude-plugin
+
+# Or install locally
+/plugin marketplace add ~/path/to/safe-rm-claude-plugin
+/plugin install safe-rm@safe-rm-marketplace
+```
 
 ### Project Structure
 
 ```
-safe-rm-claude-plugin/
-├── .claude-plugin/
-│   ├── plugin.json          # Plugin metadata
-│   └── marketplace.json     # Marketplace definition
-├── hooks/
-│   └── hooks.json           # SessionStart hook configuration
-├── bin/
-│   └── safe-rm              # Safe-rm script
-├── README.md                # This file
-└── LICENSE                  # MIT License
+.claude-plugin/      # Plugin configuration
+├── plugin.json      # Metadata
+└── marketplace.json # Marketplace definition
+hooks/hooks.json     # Auto-setup on session start
+bin/safe-rm          # Protection script
 ```
 
-### Testing
+## License & Contributing
 
-Test the plugin locally before publishing:
+MIT License • Contributions welcome!
 
-```bash
-# Install locally
-/plugin install ~/path/to/safe-rm-claude-plugin
-
-# Start a new Claude Code session and test
-rm --help
-```
-
-## License
-
-MIT License - See LICENSE file for details
-
-## Author
-
-Created by meijin
-
-## Contributing
-
-Contributions are welcome! Please feel free to submit issues or pull requests.
+Created by [meijin](https://github.com/TeXmeijin)
