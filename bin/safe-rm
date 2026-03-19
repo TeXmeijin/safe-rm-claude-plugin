@@ -200,8 +200,9 @@ check_special_dirs() {
             abs_path=$(realpath "$file" 2>/dev/null || echo "$file")
 
             if [[ "$abs_path" == "/" ]] || [[ "$abs_path" == "$HOME" ]]; then
-                echo -e "${RED}FORBIDDEN: Cannot remove special directory: $abs_path${NC}"
-                echo "You must manually run: rm $abs_path"
+                echo -e "${RED}❌ BLOCKED: Cannot remove special directory: $abs_path${NC}"
+                echo "This protection runs in Claude Code's shell only."
+                echo "NEXT ACTION👉: Ask the user to run this in their own terminal: /bin/rm $abs_path"
                 exit 1
             fi
         done
@@ -218,8 +219,9 @@ check_dotfiles() {
             abs_path=$(realpath "$file" 2>/dev/null || echo "$(pwd)/$file")
 
             if [[ "$filename" =~ ^\. ]]; then
-                echo -e "${RED}FORBIDDEN: You are trying to remove dotfile: $filename${NC}"
-                echo "You must ask your leader to run manually: rm $abs_path"
+                echo -e "${RED}❌ BLOCKED: You are trying to remove dotfile: $filename${NC}"
+                echo "This protection runs in Claude Code's shell only. The user's terminal is not affected."
+                echo "NEXT ACTION👉: Ask the user to run this in their own terminal: /bin/rm $abs_path"
                 exit 1
             fi
         done
@@ -236,9 +238,10 @@ check_file_count() {
             if [[ "$file_count" -gt "$FORBIDDEN_FILE_COUNT" ]]; then
                 local abs_path
                 abs_path=$(realpath "$file" 2>/dev/null || echo "$(pwd)/$file")
-                echo -e "${RED}FORBIDDEN: Directory contains $file_count files (limit: $FORBIDDEN_FILE_COUNT)${NC}"
+                echo -e "${RED}❌ BLOCKED: Directory contains $file_count files (limit: $FORBIDDEN_FILE_COUNT)${NC}"
                 echo "Directory: $abs_path"
-                echo "NEXT ACTION👉: You MUST ask your manager to run manually: rm -rf $abs_path"
+                echo "This protection runs in Claude Code's shell only. The user's terminal is not affected."
+                echo "NEXT ACTION👉: Ask the user to run this in their own terminal: /bin/rm -rf $abs_path"
                 exit 1
             fi
         fi
@@ -264,10 +267,10 @@ check_git_status() {
                     local encoded_filename
                     encoded_filename=$(echo "$abs_path" | base64)
 
-                    echo -e "${YELLOW}CONFIRMATION REQUIRED: File is git-managed: $file${NC}"
+                    echo -e "${YELLOW}⚠️ CONFIRMATION REQUIRED: File is git-managed: $file${NC}"
                     echo "Absolute path: $abs_path"
-                    echo "To confirm removal, run:"
-                    echo "safe-rm --encoded-file-name $encoded_filename"
+                    echo "To confirm removal, run: rm --encoded-file-name $encoded_filename"
+                    echo "Or ask the user to run in their own terminal: /bin/rm $abs_path"
                     exit 1
                 fi
             elif [[ -d "$file" ]]; then
@@ -281,10 +284,10 @@ check_git_status() {
                     local encoded_filename
                     encoded_filename=$(echo "$abs_path" | base64)
 
-                    echo -e "${YELLOW}CONFIRMATION REQUIRED: Directory contains $git_files git-managed files: $file${NC}"
+                    echo -e "${YELLOW}⚠️ CONFIRMATION REQUIRED: Directory contains $git_files git-managed files: $file${NC}"
                     echo "Absolute path: $abs_path"
-                    echo "To confirm removal, run:"
-                    echo "safe-rm --encoded-file-name $encoded_filename"
+                    echo "To confirm removal, run: rm --encoded-file-name $encoded_filename"
+                    echo "Or ask the user to run in their own terminal: /bin/rm -rf $abs_path"
                     exit 1
                 fi
             fi
@@ -302,16 +305,19 @@ check_outside_cwd() {
             local abs_path
             abs_path=$(realpath "$file" 2>/dev/null || echo "$file")
 
+            # Allow /tmp and /private/tmp (macOS) — these are temp directories
+            if [[ "$abs_path" == /tmp/* ]] || [[ "$abs_path" == /private/tmp/* ]]; then
+                continue
+            fi
+
             # Check if the file's absolute path starts with the current working directory
             if [[ "$abs_path" != "$cwd"/* ]] && [[ "$abs_path" != "$cwd" ]]; then
-                echo -e "${RED}FORBIDDEN: Cannot remove files outside current directory${NC}" >&2
+                echo -e "${RED}❌ BLOCKED: Cannot remove files outside current directory${NC}" >&2
                 echo "Current directory: $cwd" >&2
                 echo "Target file: $abs_path" >&2
                 echo "" >&2
-                echo "You can override this restriction with --forbidden-outside-cwd false option," >&2
-                echo "but you MUST confirm with your manager before using this option." >&2
-                echo "" >&2
-                echo "Example: safe-rm --forbidden-outside-cwd false $file" >&2
+                echo "To override: rm --forbidden-outside-cwd false $file" >&2
+                echo "Or ask the user to run in their own terminal: /bin/rm $abs_path" >&2
                 exit 1
             fi
         done
@@ -327,12 +333,12 @@ check_force_allowed() {
 
             # Check if the file is under /tmp or /private/tmp (macOS)
             if [[ "$abs_path" != /tmp/* ]] && [[ "$abs_path" != /private/tmp/* ]]; then
-                echo -e "${RED}FORBIDDEN: The -f (force) option is only allowed for files under /tmp${NC}" >&2
+                echo -e "${RED}❌ BLOCKED: The -f (force) option is only allowed for files under /tmp${NC}" >&2
                 echo "Target file: $abs_path" >&2
                 echo "" >&2
-                echo "Please use one of the following options:" >&2
-                echo "  1. Use -r option only (without -f): safe-rm -r <directory>" >&2
-                echo "  2. Ask your manager to run manually: rm -rf <directory>" >&2
+                echo "Options:" >&2
+                echo "  1. Use -r without -f: rm -r <directory>" >&2
+                echo "  2. Ask the user to run in their own terminal: /bin/rm -rf $abs_path" >&2
                 exit 1
             fi
         done
@@ -355,14 +361,12 @@ check_gitignored() {
                     local abs_path
                     abs_path=$(realpath "$file" 2>/dev/null || echo "$(pwd)/$file")
 
-                    echo -e "${RED}FORBIDDEN: Cannot remove gitignored file: $file${NC}" >&2
+                    echo -e "${RED}❌ BLOCKED: Cannot remove gitignored file: $file${NC}" >&2
                     echo "Absolute path: $abs_path" >&2
-                    echo "" >&2
                     echo "This file is listed in .gitignore and may be important." >&2
-                    echo "You can override this restriction with --forbidden-gitignored false option," >&2
-                    echo "but you MUST confirm with your manager before using this option." >&2
                     echo "" >&2
-                    echo "Example: safe-rm --forbidden-gitignored false $file" >&2
+                    echo "To override: rm --forbidden-gitignored false $file" >&2
+                    echo "Or ask the user to run in their own terminal: /bin/rm $abs_path" >&2
                     exit 1
                 fi
             fi

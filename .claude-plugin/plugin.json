@@ -1,5 +1,6 @@
 {
   "name": "safe-rm",
+  "version": "0.2.0",
   "description": "Safe remove command wrapper for AI coding agents. Prevents accidental deletion of important files by enforcing safety checks on dotfiles, git-managed files, directories outside cwd, and special directories.",
   "author": {
     "name": "meijin",

@@ -6,7 +6,7 @@
         "hooks": [
           {
             "type": "command",
-            "command": "echo \"alias rm='${CLAUDE_PLUGIN_ROOT}/bin/safe-rm'\" >> \"$CLAUDE_ENV_FILE\""
+            "command": "${CLAUDE_PLUGIN_ROOT}/hooks/setup-env.sh"
           }
         ]
       }
