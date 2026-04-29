@@ -47,3 +47,7 @@ coverage/
 # Misc
 *.bak
 *.tmp
+
+# Claude Code ローカル設定
+.claude/settings.local.json
+.claude/plans/
